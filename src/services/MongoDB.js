@@ -32,6 +32,7 @@ class MongoDB {
     const connectionAuth = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      useFindAndModify: false,
       // to be used when using cluster or credentials
 
       /* auth: {
