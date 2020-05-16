@@ -12,10 +12,10 @@ export const Protect = asyncHandler(async (ctx, next) => {
   try {
     let decoded;
     if (token) {
-      decoded = jwt.verify(token, config.jwtConfig.JWT_SECRET)
+      decoded = jwt.verify(token, config.jwtConfig.JWT_SECRET);
     }
-    if (token && decoded.id || decoded.id === ctx.params.id) {
-       ctx.user = await UserModel.findById(decoded.id);
+    if (decoded || decoded.id === ctx.params.id) {
+      ctx.user = await UserModel.findById(decoded.id);
       return next();
     }
   } catch (err) {
@@ -28,8 +28,8 @@ export const Protect = asyncHandler(async (ctx, next) => {
 export const Authorized = (...roles) => {
   return (ctx, next) => {
     if (!roles.includes(ctx.user.typeOfId)) {
-     ctx.throw(403, `User is not authorized to access this route`)
+      ctx.throw(403, 'User is not authorized to access this route');
     }
     return next();
-  }
-}
+  };
+};

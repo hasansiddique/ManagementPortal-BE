@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import bcryptJs from 'bcryptjs';
 import config from '../../../config';
 
 const userSchema = new mongoose.Schema({
@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     required: [true, 'please add a email'],
     match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
       'please add a valid email',
     ],
   },
@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
     enum: [0, 1, 2],
     default: 0,
   },
-  refreshToken:{
+  refreshToken: {
     type: String,
     default: null,
   },
@@ -47,24 +47,28 @@ const userSchema = new mongoose.Schema({
 // eslint-disable-next-line func-names
 userSchema.methods.getJwtToken = function () {
   // eslint-disable-next-line no-underscore-dangle,no-return-await
-  return jwt.sign({ id: this._id }, config.jwtConfig.JWT_SECRET, { expiresIn: config.jwtConfig.JWT_EXPIRE });
+  return jwt.sign({ id: this._id }, config.jwtConfig.JWT_SECRET,
+    { expiresIn: config.jwtConfig.JWT_EXPIRE });
 };
 
 // refresh token
+// eslint-disable-next-line func-names
 userSchema.methods.getSignedRefreshJwtToken = function() {
-  return jwt.sign({ id: this._id }, config.jwtConfig.JWT_REFRESH_SECRET, { expiresIn: config.jwtConfig.JWT_REFRESH_EXPIRE });
+  // eslint-disable-next-line no-underscore-dangle
+  return jwt.sign({ id: this._id }, config.jwtConfig.JWT_REFRESH_SECRET,
+    { expiresIn: config.jwtConfig.JWT_REFRESH_EXPIRE });
 };
 
 // eslint-disable-next-line func-names
 userSchema.pre('save', async function () {
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  const salt = await bcryptJs.genSalt(10);
+  this.password = await bcryptJs.hash(this.password, salt);
 });
 
 // eslint-disable-next-line func-names
 userSchema.methods.matchPassword = async function (enteredPassword) {
   // eslint-disable-next-line no-return-await
-  return await bcrypt.compare(enteredPassword, this.password);
+  return await bcryptJs.compare(enteredPassword, this.password);
 };
 
 const UserModel = mongoose.model('user', userSchema);

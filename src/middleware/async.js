@@ -3,4 +3,3 @@ const asyncHandler = fn => (ctx, next) =>
 
 export default asyncHandler;
 
-

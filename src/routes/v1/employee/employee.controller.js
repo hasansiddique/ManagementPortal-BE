@@ -1,14 +1,13 @@
-import path from 'path';
 import employeeModel from './employee.model';
 import UserModel from '../user/user.model';
 import asyncHandler from '../../../middleware/async';
-import config from "../../../config";
+import config from '../../../config';
 
 // @desc      create employee
 // @route     POST /v1/employee/create
 // @access    Private
 export const addEmp = asyncHandler(async (ctx) => {
-  ctx.assert(ctx.request.body, 400, 'Please enter the  required fields')
+  ctx.assert(ctx.request.body, 400, 'Please enter the  required fields');
   const { name, email } = ctx.request.body;
   // if user add file then execute below condition otherwise go next
   if (ctx.request.file) {
@@ -16,7 +15,7 @@ export const addEmp = asyncHandler(async (ctx) => {
     // Make sure the image is a photo
     ctx.assert(file.mimetype.startsWith('image'), 400, 'Please upload an image file');
     // Check fileSize
-    ctx.assert(file.size <= config.uploadConfig.MAX_FILE_UPLOAD , 400, 'Please upload an image less than 2MB');
+    ctx.assert(file.size <= config.uploadConfig.MAX_FILE_UPLOAD, 400, 'Please upload an image less than 2MB');
     // Add file to request body
     ctx.request.body.photo = file.filename;
   }
@@ -25,13 +24,13 @@ export const addEmp = asyncHandler(async (ctx) => {
   // make employee password on the fly
   const password = email.concat('.', 'warlords', 123);
   // creates employee account
-   const empAccount = await UserModel.create({ username: name, email, password });
+  const empAccount = await UserModel.create({ username: name, email, password });
   // add employee to request body so that it relates to its specific account
-   ctx.request.body.user = empAccount.id;
+  ctx.request.body.user = empAccount.id;
   // save employee data
   await employeeModel.create(ctx.request.body);
-   ctx.status = 201;
-   ctx.body = { success: true, status: 'Employee Successfully Created' };
+  ctx.status = 201;
+  ctx.body = { success: true, status: 'Employee Successfully Created' };
 });
 
 // @desc      get all employee
@@ -66,13 +65,13 @@ export const uptEmp = asyncHandler(async (ctx) => {
     // Make sure the image is a photo
     ctx.assert(file.mimetype.startsWith('image'), 400, 'Please upload an image file');
     // Check fileSize
-    ctx.assert(file.size <= config.uploadConfig.MAX_FILE_UPLOAD , 400, 'Please upload an image less than 2MB');
+    ctx.assert(file.size <= config.uploadConfig.MAX_FILE_UPLOAD, 400, 'Please upload an image less than 2MB');
     // Add file to request body
     ctx.request.body.photo = file.filename;
   }
   const empData = await employeeModel.findByIdAndUpdate(ctx.params.id, ctx.request.body, {
     new: true, runValidators: true });
-  await UserModel.findByIdAndUpdate(empData.user, { email }, { new: true, runValidators: true } );
+  await UserModel.findByIdAndUpdate(empData.user, { email }, { new: true, runValidators: true });
   ctx.status = 200;
   ctx.body = { success: true, status: 'Employee Successfully Updated' };
 });
@@ -97,5 +96,4 @@ export const empRecord = asyncHandler(async (ctx) => {
   ctx.status = 200;
   ctx.body = { success: true, record };
 });
-
 

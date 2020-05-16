@@ -22,7 +22,7 @@ const employeeSchema = new mongoose.Schema({
     unique: true,
     required: [true, 'please add a email'],
     match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
       'please add a valid email',
     ],
   },
@@ -44,7 +44,7 @@ const employeeSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    default: 'no-photo.jpg'
+    default: 'no-photo.jpg',
   },
   joinDate: {
     type: Date,
@@ -58,6 +58,7 @@ const employeeSchema = new mongoose.Schema({
 });
 
 // Cascade delete employee account when a employee record is deleted
+// eslint-disable-next-line func-names
 employeeSchema.pre('remove', async function(next) {
   await this.model('user').findByIdAndDelete(this.user);
   next();

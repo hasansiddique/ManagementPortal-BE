@@ -24,11 +24,11 @@ class MongoDB {
     const {
       // user, password,
       clusterUrl,
-      clusterPort,
-      database,
+     // clusterPort,database,
     } = mongodbConfig;
 
-    const uri = `mongodb://${clusterUrl}:${clusterPort}/${database}`;
+    // const uri = `mongodb://${clusterUrl}:${clusterPort}/${database}`;
+    const uri = `${clusterUrl}`;
     const connectionAuth = {
       useNewUrlParser: true,
       useUnifiedTopology: true,

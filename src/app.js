@@ -4,9 +4,9 @@ import serve from 'koa-static';
 import '@babel/polyfill';
 import Logger from 'loglevel';
 import Router from 'koa-router';
-import Dateformat from 'dateformat';
+import dateFormat from 'dateformat';
 import BodyParser from 'koa-bodyparser';
-import multer from '@koa/multer';
+import fileParser from '@koa/multer';
 
 
 // Route imports
@@ -17,26 +17,26 @@ import user from './routes/v1/user/user.routes';
 import employees from './routes/v1/employee/employee.routes';
 
 import config from './config';
-import logger from "./middleware/logger";
+import logger from './middleware/logger';
 
 // Define logger level
 Logger.setLevel(config.logLevel);
 
 // Initialize server
-Logger.info(`time="${Dateformat(Date.now(), DATE_FORMAT, true)}" level=INFO message="Initializing node-server..."`);
+Logger.info(`time="${dateFormat(Date.now(), DATE_FORMAT, true)}" level=INFO message="Initializing node-server..."`);
 
 const koa = new Koa();
 
 const router = Router();
 const v1router = Router();
-const fileStorage = multer.diskStorage({
+const fileStorage = fileParser.diskStorage({
   destination: (ctx, file, cb) => {
-    cb(null, 'uploads')
+    cb(null, 'uploads');
   },
   filename: (ctx, file, cb) => {
-    const type = file.originalname.split('.')[1]
-    cb(null, `${file.fieldname}-${new Date().toISOString()}.${type}`)
-  }
+    const type = file.originalname.split('.')[1];
+    cb(null, `${file.fieldname}-${new Date().toISOString()}.${type}`);
+  },
 });
 
 
@@ -50,9 +50,9 @@ router.use('/v1', v1router.routes());
 
 
 // middleware for file uploading
-koa.use(multer({storage: fileStorage }).single('file'));
+koa.use(fileParser({ storage: fileStorage }).single('file'));
 
-//Set static folder for uploading images
+// Set static folder for uploading images
 koa.use(serve('./uploads'));
 
 // Dev logging middleware
@@ -69,13 +69,12 @@ koa.use(BodyParser({
 koa.use(router.routes());
 
 // Listen to port
-const port = parseInt(config.serverPort, 10);
+const port = config.serverPort;
 const server = koa.listen(port, () => {
-  Logger.info(`time="${Dateformat(Date.now(), DATE_FORMAT, true)}" level=INFO message="node-server started running on ${port}"`);
+  Logger.info(`time="${dateFormat(Date.now(), DATE_FORMAT, true)}" level=INFO message="node-server started running on ${port}"`);
 });
 
 export default {
   server,
   mongodb,
 };
-/* eslint-enable no-console */
