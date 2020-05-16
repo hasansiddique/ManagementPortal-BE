@@ -17,7 +17,7 @@ export default {
     user: process.env.MONGODB_USER,
     password: process.env.MONGODB_PASSWORD,
     clusterPort: process.env.MONGODB_CLUSTER_PORT || 27017,
-    clusterUrl: process.env.MONGODB_CLUSTER_URL || 'localhost',
+    clusterUrl: process.env.MONGODB_CLUSTER_URL || 'mongodb+srv://hanzlah123:hanzlah123@wancloudsmanagementportal-ondka.mongodb.net/wc_management_portal?retryWrites=true&w=majority',
     database: process.env.MONGODB_DATABASE || 'wc_management_portal',
   },
   jwtConfig: {
@@ -29,7 +29,10 @@ export default {
   uploadConfig: {
     FILE_UPLOAD_PATH: './uploads',
     MAX_FILE_UPLOAD: 2000000,
-  }
+  },
+  secret: {
+    admin1: 'superAdminWarLord1',
+    admin2: 'AdminWarLord2',
+  },
 };
-
 

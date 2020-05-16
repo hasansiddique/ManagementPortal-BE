@@ -1,30 +1,39 @@
 import jwt from 'jsonwebtoken';
 import UserModel from './user.model';
 import asyncHandler from '../../../middleware/async';
-import config from "../../../config";
+import config from '../../../config';
 
 // @desc      Register user
 // @route     POST /v1/user/register
 // @access    Public
 export const registerUser = asyncHandler(async (ctx) => {
   let user;
-  const { username, email, password } = ctx.request.body;
-  user = await UserModel.find();
+  const { username, email, password, type_of_id, secret } = ctx.request.body;
+  // user = await UserModel.find();
   // if (user.length > 1) {
-  //   ctx.throw(400, 'Registered users with maximum length exceeded ');
+  //   ctx.throw(400, 'Registered admins with maximum length exceeded ');
   // }
-  user = await UserModel.findOne({ email });
-  if (user) {
-    ctx.throw(400, 'user with same credentials already exists');
+  // eslint-disable-next-line camelcase
+  if (type_of_id === 1) {
+    ctx.assert(secret === config.secret.admin1, 403, 'admin with this typeOfId secret not match');
+  }
+  // eslint-disable-next-line camelcase
+  if (type_of_id === 2) {
+    ctx.assert(secret === config.secret.admin2, 403, 'admin with this typeOfId secret not match');
   }
   user = await UserModel.findOne({ username });
   if (user) {
     ctx.throw(400, 'UserName already exists');
   }
+  user = await UserModel.findOne({ email });
+  if (user) {
+    ctx.throw(400, 'user with same credentials already exists');
+  }
   await UserModel.create({
     username,
     email,
     password,
+    typeOfId: type_of_id,
   });
   ctx.status = 201;
   ctx.body = { success: true, status: 'user Successfully Registered' };
@@ -54,7 +63,8 @@ export const loginUser = asyncHandler(async(ctx) => {
   // Create token
   const token = user.getJwtToken();
   const refreshToken = user.getSignedRefreshJwtToken();
-  const test2 = await UserModel.findByIdAndUpdate(user.id, {refreshToken}, { new: true, runValidators: true} )
+  await UserModel.findByIdAndUpdate(user.id, { refreshToken },
+    { new: true, runValidators: true });
   ctx.status = 200;
   ctx.body = { success: true, user: userById, token: { accessToken: token, refreshToken } };
 });
@@ -71,27 +81,32 @@ export const getUser = asyncHandler(async(ctx) => {
 // @route     POST /v1/user/token
 // @access    Private
 export const token = asyncHandler(async(ctx) => {
+  // eslint-disable-next-line no-shadow
   const { token } = ctx.request.body;
-  if (token === null) return ctx.status = 401;
-  const refreshToken = await UserModel.findOne({refreshToken: token})
-  ctx.assert(refreshToken, 403, 'User with specified token is not found')
+  if (token === null) {
+    ctx.status = 401;
+  }
+  const refreshToken = await UserModel.findOne({ refreshToken: token });
+  ctx.assert(refreshToken, 403, 'User with specified token is not found');
   const decoded = jwt.verify(token, config.jwtConfig.JWT_REFRESH_SECRET);
   const user = await UserModel.findById(decoded.id);
   const accessToken = user.getJwtToken();
   ctx.body = { success: true, accessToken };
+  return null;
 });
 
 // @desc      Logout User with its refresh token access token
 // @route     Get /v1/user/token
 // @access    Private
 export const logOut = asyncHandler(async (ctx) => {
+  // eslint-disable-next-line no-shadow
   const { token } = ctx.request.body;
   if (!token) {
     ctx.throw(400, 'please add payload');
   }
-  const refreshToken = await UserModel.findOne({refreshToken: token})
-  ctx.assert(refreshToken, 404, 'User with specified token is not found')
-  await UserModel.findOneAndUpdate({refreshToken: token}, {refreshToken: null})
+  const refreshToken = await UserModel.findOne({ refreshToken: token });
+  ctx.assert(refreshToken, 404, 'User with specified token is not found');
+  await UserModel.findOneAndUpdate({ refreshToken: token }, { refreshToken: null });
   ctx.status = 200;
   ctx.body = { success: true, status: 'User successfully logout' };
 });
@@ -99,7 +114,7 @@ export const logOut = asyncHandler(async (ctx) => {
 // @desc      Update user password
 // @route     Put /v1/users/update-password
 // @access    Private
-export const updatePassword =  asyncHandler(async (ctx) => {
+export const updatePassword = asyncHandler(async (ctx) => {
   const user = await UserModel.findById(ctx.user.id).select('+password');
   const { currentpassword, newpassword } = ctx.request.body;
   if (!currentpassword || !newpassword) {
@@ -107,10 +122,10 @@ export const updatePassword =  asyncHandler(async (ctx) => {
   }
   // Check current password
   if (!(await user.matchPassword(currentpassword))) {
-    ctx.throw(401, 'Password is Incorrect')
+    ctx.throw(401, 'Password is Incorrect');
   }
   user.password = newpassword;
   await user.save();
   ctx.status = 200;
   ctx.body = { success: true, status: 'Password successfully Updated' };
-})
+});
